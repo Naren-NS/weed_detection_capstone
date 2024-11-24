@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import FileResponse
 import torch
 from PIL import Image, ImageDraw
 import io
@@ -7,7 +8,6 @@ import os
 app = FastAPI()
 
 # Load YOLOv5 model using torch.hub with force_reload=True
-# Using the correct path for Docker environment
 model = torch.hub.load('ultralytics/yolov5', 'custom', path='/app/best.pt', force_reload=True, trust_repo=True)
 model.eval()  # Set the model to evaluation mode
 
@@ -40,10 +40,8 @@ async def detect_weed(file: UploadFile = File(...)):
     output_path = os.path.join(output_dir, "weed_detected.jpg")
     image.save(output_path, format="JPEG")
 
-    # Return the response with the path to the saved image
+    # Return the response
     if weed_detected:
-        print("Detected and saved to:", output_path)
-        return {"message": "Weed Detected", "image_path": output_path}
+        return {"message": "Weed Detected", "image_path": "/returned_weed/weed_detected.jpg"}
     else:
-        print("Not Detected")
         return {"message": "No Weed Detected"}
